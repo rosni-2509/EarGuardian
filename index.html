@@ -1,0 +1,578 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EarGuardian Smart Earplug</title>
+
+<style>
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background: #f3f6fb;
+  color: #1e293b;
+}
+
+header {
+  background: #10243e;
+  color: white;
+  padding: 22px 6%;
+}
+
+header h1 {
+  font-size: 26px;
+  margin-bottom: 7px;
+}
+
+header p {
+  color: #cbd5e1;
+  font-size: 14px;
+}
+
+.container {
+  max-width: 1100px;
+  margin: auto;
+  padding: 24px 18px;
+}
+
+.section-title {
+  margin: 25px 0 15px;
+  font-size: 20px;
+}
+
+.status-bar {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: space-between;
+  box-shadow: 0 2px 10px #00000008;
+}
+
+.status {
+  font-size: 13px;
+  color: #475569;
+}
+
+.status strong {
+  color: #2563eb;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.card {
+  background: white;
+  border-radius: 14px;
+  padding: 21px;
+  box-shadow: 0 3px 12px #00000008;
+}
+
+.card-label {
+  color: #64748b;
+  font-size: 14px;
+  margin-bottom: 15px;
+}
+
+.reading {
+  font-size: 32px;
+  font-weight: bold;
+  margin-bottom: 9px;
+}
+
+.unit {
+  font-size: 15px;
+  color: #64748b;
+}
+
+.card-note {
+  font-size: 12px;
+  color: #64748b;
+  margin-top: 12px;
+}
+
+.alert-box {
+  display: none;
+  padding: 17px;
+  margin-top: 20px;
+  border-radius: 12px;
+  background: #fff1f2;
+  border: 1px solid #fda4af;
+  color: #9f1239;
+}
+
+.alert-box h3 {
+  margin-bottom: 8px;
+  font-size: 17px;
+}
+
+.alert-box p {
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.alert-ok {
+  padding: 15px;
+  border-radius: 10px;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #065f46;
+  font-size: 14px;
+  margin-top: 20px;
+}
+
+.thresholds {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.threshold-card {
+  background: white;
+  padding: 18px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.threshold-card label {
+  display: block;
+  font-size: 13px;
+  margin-bottom: 10px;
+  color: #475569;
+}
+
+.threshold-card input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 15px;
+}
+
+button {
+  border: none;
+  border-radius: 9px;
+  padding: 12px 16px;
+  font-size: 14px;
+  cursor: pointer;
+  margin: 8px 8px 0 0;
+}
+
+.primary {
+  background: #2563eb;
+  color: white;
+}
+
+.secondary {
+  background: #e2e8f0;
+  color: #1e293b;
+}
+
+button:hover {
+  opacity: 0.88;
+}
+
+.chart-card {
+  background: white;
+  padding: 20px;
+  border-radius: 14px;
+  margin-top: 20px;
+}
+
+canvas {
+  width: 100%;
+  height: 210px;
+  display: block;
+}
+
+footer {
+  text-align: center;
+  padding: 25px 15px;
+  color: #64748b;
+  font-size: 12px;
+}
+
+@media (max-width: 700px) {
+  .grid, .thresholds {
+    grid-template-columns: 1fr;
+  }
+
+  header h1 {
+    font-size: 22px;
+  }
+
+  .reading {
+    font-size: 29px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>EarGuardian Smart Earplug</h1>
+  <p>Smart Ear Protection and Environmental Monitoring</p>
+</header>
+
+<main class="container">
+
+  <div class="status-bar">
+    <div class="status">Dashboard: <strong>Running</strong></div>
+    <div class="status">Reading Mode: <strong>Sample Readings</strong></div>
+    <div class="status">Hardware: <strong>Not Connected</strong></div>
+  </div>
+
+  <h2 class="section-title">Sensor Monitoring</h2>
+
+  <div class="grid">
+
+    <section class="card">
+      <div class="card-label">Noise Level</div>
+      <div class="reading">
+        <span id="noise">72</span>
+        <span class="unit">dB</span>
+      </div>
+      <div id="noise-status">Within configured limit</div>
+      <div class="card-note">Noise level monitoring</div>
+    </section>
+
+    <section class="card">
+      <div class="card-label">Temperature</div>
+      <div class="reading">
+        <span id="temperature">36.5</span>
+        <span class="unit">°C</span>
+      </div>
+      <div id="temperature-status">Within configured limit</div>
+      <div class="card-note">Temperature monitoring</div>
+    </section>
+
+    <section class="card">
+      <div class="card-label">Moisture</div>
+      <div class="reading">
+        <span id="moisture">40</span>
+        <span class="unit">%</span>
+      </div>
+      <div id="moisture-status">Within configured limit</div>
+      <div class="card-note">Moisture monitoring</div>
+    </section>
+
+  </div>
+
+  <h2 class="section-title">Alert Notifications</h2>
+
+  <div id="alert-box" class="alert-box" role="alert" aria-live="assertive">
+    <h3 id="alert-title">EarGuardian Alert</h3>
+    <p id="alert-message"></p>
+  </div>
+
+  <div id="alert-ok" class="alert-ok" role="status">
+    No active alerts. All displayed readings are within configured limits.
+  </div>
+
+  <h2 class="section-title">Alert Threshold Settings</h2>
+
+  <div class="thresholds">
+
+    <div class="threshold-card">
+      <label for="noise-limit">Noise limit (dB)</label>
+      <input id="noise-limit" type="number" min="1" max="200" value="85">
+    </div>
+
+    <div class="threshold-card">
+      <label for="temperature-limit">Temperature limit (°C)</label>
+      <input id="temperature-limit" type="number"
+        min="1" max="100" step="0.1" value="38">
+    </div>
+
+    <div class="threshold-card">
+      <label for="moisture-limit">Moisture limit (%)</label>
+      <input id="moisture-limit" type="number"
+        min="1" max="100" value="70">
+    </div>
+
+  </div>
+
+  <div style="margin-top: 15px;">
+    <button class="primary" id="update-button">
+      Update Thresholds
+    </button>
+
+    <button class="secondary" id="generate-button">
+      Generate New Readings
+    </button>
+
+    <button class="secondary" id="pause-button">
+      Pause Updates
+    </button>
+  </div>
+
+  <section class="chart-card">
+    <h2 style="font-size:18px; margin-bottom:15px;">
+      Noise Level Trend
+    </h2>
+    <canvas id="noise-chart"></canvas>
+    <p class="card-note">
+      Trend chart based on generated sample readings.
+    </p>
+  </section>
+
+</main>
+
+<footer>
+  EarGuardian Smart Earplug | Software Dashboard
+</footer>
+
+<script>
+const $ = id => document.getElementById(id);
+
+let readings = {
+  noise: 72,
+  temperature: 36.5,
+  moisture: 40
+};
+
+let noiseHistory = [65, 68, 72, 70, 75, 72];
+let timer = null;
+let paused = false;
+let previousAlerts = new Set();
+
+function getLimits() {
+  return {
+    noise: Number($("noise-limit").value),
+    temperature: Number($("temperature-limit").value),
+    moisture: Number($("moisture-limit").value)
+  };
+}
+
+function getActiveAlerts() {
+  const limits = getLimits();
+  const alerts = [];
+
+  if (readings.noise > limits.noise) {
+    alerts.push({
+      key: "noise",
+      message: `High noise detected: ${readings.noise} dB. Configured limit: ${limits.noise} dB.`
+    });
+  }
+
+  if (readings.temperature > limits.temperature) {
+    alerts.push({
+      key: "temperature",
+      message: `Temperature limit exceeded: ${readings.temperature} °C. Configured limit: ${limits.temperature} °C.`
+    });
+  }
+
+  if (readings.moisture > limits.moisture) {
+    alerts.push({
+      key: "moisture",
+      message: `Moisture limit exceeded: ${readings.moisture}%. Configured limit: ${limits.moisture}%.`
+    });
+  }
+
+  return alerts;
+}
+
+function showAlerts() {
+  const alerts = getActiveAlerts();
+
+  $("noise-status").textContent =
+    readings.noise > getLimits().noise
+      ? "⚠ Above configured limit"
+      : "Within configured limit";
+
+  $("temperature-status").textContent =
+    readings.temperature > getLimits().temperature
+      ? "⚠ Above configured limit"
+      : "Within configured limit";
+
+  $("moisture-status").textContent =
+    readings.moisture > getLimits().moisture
+      ? "⚠ Above configured limit"
+      : "Within configured limit";
+
+  if (alerts.length === 0) {
+    $("alert-box").style.display = "none";
+    $("alert-ok").style.display = "block";
+    $("alert-ok").textContent =
+      "No active alerts. All displayed readings are within configured limits.";
+    previousAlerts.clear();
+    return;
+  }
+
+  $("alert-box").style.display = "block";
+  $("alert-ok").style.display = "none";
+
+  $("alert-title").textContent =
+    "⚠️ EarGuardian Alert — " + alerts.length +
+    (alerts.length === 1 ? " warning" : " warnings");
+
+  $("alert-message").innerHTML = "";
+
+  alerts.forEach(alert => {
+    const line = document.createElement("p");
+    line.style.marginTop = "7px";
+    line.textContent = alert.message;
+    $("alert-message").appendChild(line);
+  });
+
+  previousAlerts = new Set(alerts.map(alert => alert.key));
+}
+
+function renderReadings() {
+  $("noise").textContent = readings.noise;
+  $("temperature").textContent = readings.temperature.toFixed(1);
+  $("moisture").textContent = readings.moisture;
+
+  showAlerts();
+  drawChart();
+}
+
+function generateReadings() {
+  readings.noise = Math.floor(55 + Math.random() * 45);
+  readings.temperature = Number(
+    (34 + Math.random() * 7).toFixed(1)
+  );
+  readings.moisture = Math.floor(20 + Math.random() * 70);
+
+  noiseHistory.push(readings.noise);
+
+  if (noiseHistory.length > 12) {
+    noiseHistory.shift();
+  }
+
+  renderReadings();
+}
+
+function updateThresholds() {
+  const limits = getLimits();
+
+  if (
+    !Number.isFinite(limits.noise) || limits.noise <= 0 ||
+    !Number.isFinite(limits.temperature) || limits.temperature <= 0 ||
+    !Number.isFinite(limits.moisture) ||
+    limits.moisture <= 0 || limits.moisture > 100
+  ) {
+    alert("Please enter valid threshold values.");
+    return;
+  }
+
+  showAlerts();
+}
+
+function drawChart() {
+  const canvas = $("noise-chart");
+  const ctx = canvas.getContext("2d");
+  const rect = canvas.getBoundingClientRect();
+
+  if (rect.width === 0) return;
+
+  const ratio = window.devicePixelRatio || 1;
+  canvas.width = rect.width * ratio;
+  canvas.height = 210 * ratio;
+
+  ctx.scale(ratio, ratio);
+
+  const width = rect.width;
+  const height = 210;
+  const padding = 30;
+  const minValue = 40;
+  const maxValue = 110;
+
+  ctx.clearRect(0, 0, width, height);
+
+  ctx.font = "12px Arial";
+  ctx.fillStyle = "#64748b";
+
+  [40, 60, 80, 100].forEach(value => {
+    const y = height - padding -
+      ((value - minValue) / (maxValue - minValue)) *
+      (height - padding * 2);
+
+    ctx.beginPath();
+    ctx.strokeStyle = "#e2e8f0";
+    ctx.moveTo(padding, y);
+    ctx.lineTo(width - 10, y);
+    ctx.stroke();
+
+    ctx.fillText(String(value), 3, y + 4);
+  });
+
+  if (noiseHistory.length < 2) return;
+
+  const step = (width - padding - 10) /
+    (noiseHistory.length - 1);
+
+  ctx.beginPath();
+
+  noiseHistory.forEach((value, index) => {
+    const x = padding + index * step;
+    const y = height - padding -
+      ((value - minValue) / (maxValue - minValue)) *
+      (height - padding * 2);
+
+    if (index === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  });
+
+  ctx.strokeStyle = "#2563eb";
+  ctx.lineWidth = 2.5;
+  ctx.stroke();
+
+  noiseHistory.forEach((value, index) => {
+    const x = padding + index * step;
+    const y = height - padding -
+      ((value - minValue) / (maxValue - minValue)) *
+      (height - padding * 2);
+
+    ctx.beginPath();
+    ctx.arc(x, y, 3.5, 0, Math.PI * 2);
+    ctx.fillStyle = "#2563eb";
+    ctx.fill();
+  });
+}
+
+$("update-button").addEventListener("click", updateThresholds);
+
+$("generate-button").addEventListener("click", generateReadings);
+
+$("pause-button").addEventListener("click", () => {
+  paused = !paused;
+
+  if (paused) {
+    clearInterval(timer);
+    timer = null;
+    $("pause-button").textContent = "Resume Updates";
+  } else {
+    startUpdates();
+    $("pause-button").textContent = "Pause Updates";
+  }
+});
+
+function startUpdates() {
+  if (timer) clearInterval(timer);
+
+  timer = setInterval(() => {
+    if (!paused) generateReadings();
+  }, 5000);
+}
+
+window.addEventListener("resize", drawChart);
+
+renderReadings();
+startUpdates();
+</script>
+
+</body>
+</html>
